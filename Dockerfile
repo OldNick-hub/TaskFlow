@@ -1,13 +1,10 @@
-# Stage 1: Build executable Spring Boot JAR with Java 21
-FROM eclipse-temurin:21-jdk AS build
+# Stage 1: Build executable Spring Boot JAR with Maven 3.9 and Java 21
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-COPY mvnw pom.xml ./
-COPY .mvn .mvn
-RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
-
+COPY pom.xml ./
 COPY src src
-RUN ./mvnw -B clean package -DskipTests
+RUN mvn -B clean package -DskipTests
 
 # Stage 2: Minimal Java 21 runtime image
 FROM eclipse-temurin:21-jre
