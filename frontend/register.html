@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>Create account — TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/auth.js"></script>
+</head>
+<body class="auth-page">
+  <a class="skip-link" href="#register-form">Skip to registration form</a>
+
+  <header class="auth-header">
+    <div class="container auth-header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+      <a class="btn btn-ghost" href="login.html">Sign in</a>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-shell">
+      <aside class="auth-aside" aria-label="TaskFlow account benefits">
+        <div>
+          <span class="badge">Get Started</span>
+          <h2>Build clarity into every sprint and project.</h2>
+          <p>
+            Create your TaskFlow account to organize projects, prioritize deliverables, and keep deadlines
+            visible.
+          </p>
+          <ul class="auth-highlights">
+            <li>
+              <span class="auth-check" aria-hidden="true">&#10003;</span>
+              <span>Create unlimited projects scoped to your personal account.</span>
+            </li>
+            <li>
+              <span class="auth-check" aria-hidden="true">&#10003;</span>
+              <span>Filter tasks by status and priority with deadline tracking.</span>
+            </li>
+            <li>
+              <span class="auth-check" aria-hidden="true">&#10003;</span>
+              <span>Passwords hashed securely with BCrypt on the server.</span>
+            </li>
+          </ul>
+        </div>
+        <p class="auth-aside-note">
+          Already registered? Use your email and password on the Sign in page.
+        </p>
+      </aside>
+
+      <section class="auth-card" aria-labelledby="register-heading">
+        <div class="auth-card-header">
+          <h1 class="auth-title" id="register-heading">Create your account</h1>
+          <p class="auth-subtitle">Start managing projects and tasks with TaskFlow.</p>
+        </div>
+
+        <div id="auth-feedback" class="alert" role="alert" hidden></div>
+
+        <form id="register-form" method="POST" action="/api/auth/register" novalidate aria-labelledby="register-heading">
+          <div class="field">
+            <label for="name">
+              Full name <span class="required-mark" aria-hidden="true">*</span>
+            </label>
+            <span id="name-hint" class="hint">2 to 100 characters.</span>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="input"
+              required
+              minlength="2"
+              maxlength="100"
+              autocomplete="name"
+              enterkeyhint="next"
+              aria-describedby="name-hint"
+              data-error="name-error"
+              placeholder="Alex Morgan"
+            >
+            <div id="name-error" class="error-msg">
+              Full name must be between 2 and 100 characters.
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="email">
+              Email address <span class="required-mark" aria-hidden="true">*</span>
+            </label>
+            <span id="email-hint" class="hint">Format: you@example.com</span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="input"
+              required
+              maxlength="255"
+              autocomplete="username"
+              spellcheck="false"
+              enterkeyhint="next"
+              aria-describedby="email-hint"
+              data-error="email-error"
+              placeholder="you@example.com"
+            >
+            <div id="email-error" class="error-msg">
+              Enter a valid email address such as you@example.com.
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">
+              Password <span class="required-mark" aria-hidden="true">*</span>
+            </label>
+            <ul id="password-rules" class="password-rules">
+              <li>8 to 72 characters</li>
+            </ul>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="input"
+                required
+                minlength="8"
+                maxlength="72"
+                autocomplete="new-password"
+                enterkeyhint="next"
+                aria-describedby="password-rules"
+                data-error="password-error"
+                placeholder="Create a strong password"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                data-toggle-password="password"
+                aria-pressed="false"
+                aria-label="Show password"
+              >
+                Show
+              </button>
+            </div>
+            <div id="password-error" class="error-msg">
+              Password must be between 8 and 72 characters.
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="confirmPassword">
+              Confirm password <span class="required-mark" aria-hidden="true">*</span>
+            </label>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                class="input"
+                required
+                minlength="8"
+                maxlength="72"
+                autocomplete="new-password"
+                enterkeyhint="done"
+                data-error="confirmPassword-error"
+                placeholder="Re-enter your password"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                data-toggle-password="confirmPassword"
+                aria-pressed="false"
+                aria-label="Show confirm password"
+              >
+                Show
+              </button>
+            </div>
+            <div id="confirmPassword-error" class="error-msg">
+              Passwords must match.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="register-submit">
+            Create account
+          </button>
+        </form>
+
+        <p class="auth-footer-link">
+          Already have an account? <a href="login.html">Sign in</a>
+        </p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

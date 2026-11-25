@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>Dashboard — TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/dashboard.js"></script>
+</head>
+<body class="dashboard-body" data-requires-auth="true">
+  <a class="skip-link" href="#main-content">Skip to dashboard content</a>
+
+  <div class="dashboard-shell">
+    <!-- Mobile & Tablet Header -->
+    <header class="mobile-topbar">
+      <a class="brand" href="dashboard.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+
+      <div class="mobile-topbar-actions">
+        <button
+          type="button"
+          class="nav-toggle"
+          id="sidebar-open-btn"
+          aria-expanded="false"
+          aria-controls="dashboard-sidebar"
+          aria-label="Open navigation menu"
+        >
+          <span aria-hidden="true">&#9776;</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
+    <!-- Fixed Desktop Sidebar / Responsive Drawer -->
+    <aside class="sidebar" id="dashboard-sidebar" aria-label="Workspace sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-header">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">TF</span>
+            <span>TaskFlow</span>
+          </a>
+          <button
+            type="button"
+            class="sidebar-close"
+            id="sidebar-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <nav aria-label="Dashboard sections">
+          <ul class="sidebar-nav-list">
+            <li>
+              <a class="sidebar-link is-active" href="#overview-section" data-nav-target="overview-section" aria-current="page">
+                <span class="sidebar-icon" aria-hidden="true">D</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="projects.html">
+                <span class="sidebar-icon" aria-hidden="true">P</span>
+                <span>Projects</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="tasks.html">
+                <span class="sidebar-icon" aria-hidden="true">T</span>
+                <span>Tasks</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="settings.html">
+                <span class="sidebar-icon" aria-hidden="true">S</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading account…</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-full" id="logout-btn">
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="dashboard-main">
+      <div class="dashboard-container">
+        <!-- Session Verification Notice -->
+        <div id="auth-guard-status" class="alert alert-info" role="status">
+          Verifying your authenticated session…
+        </div>
+
+        <!-- Protected Dashboard Content (revealed after JWT verification) -->
+        <div id="dashboard-content" class="dashboard-container" hidden>
+          <!-- Welcome Header -->
+          <section class="welcome-banner" id="overview-section" aria-labelledby="welcome-heading">
+            <div>
+              <span class="badge">Workspace Overview</span>
+              <h1 class="welcome-title" id="welcome-heading">Welcome back</h1>
+              <p class="welcome-subtitle" id="welcome-subtitle">
+                Live project and task metrics from your TaskFlow workspace.
+              </p>
+            </div>
+            <div class="welcome-actions">
+              <button type="button" class="btn btn-secondary" id="refresh-dashboard-btn">
+                Refresh data
+              </button>
+            </div>
+          </section>
+
+          <!-- Live Status & Error Feedback -->
+          <div id="dashboard-loading-banner" class="alert alert-info" role="status" hidden>
+            Loading latest projects, tasks, and analytics…
+          </div>
+
+          <div id="dashboard-error-banner" class="alert alert-error" role="alert" hidden>
+            <div class="alert-actions">
+              <span id="dashboard-error-text">Unable to load dashboard analytics.</span>
+              <button type="button" class="btn btn-secondary" id="retry-dashboard-btn">
+                Retry
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 Statistics Cards -->
+          <section aria-label="Workspace statistics">
+            <div class="stats-grid" id="stats-grid">
+              <article class="card stat-card">
+                <div class="stat-header">
+                  <span class="stat-label">Total Projects</span>
+                  <span class="stat-pill stat-pill-indigo">Active</span>
+                </div>
+                <div class="stat-value" id="stat-total-projects">0</div>
+                <div class="stat-footnote">Owned workspaces</div>
+              </article>
+
+              <article class="card stat-card">
+                <div class="stat-header">
+                  <span class="stat-label">Total Tasks</span>
+                  <span class="stat-pill">All</span>
+                </div>
+                <div class="stat-value" id="stat-total-tasks">0</div>
+                <div class="stat-footnote" id="stat-pending-footnote">0 pending completion</div>
+              </article>
+
+              <article class="card stat-card">
+                <div class="stat-header">
+                  <span class="stat-label">Completed Tasks</span>
+                  <span class="stat-pill stat-pill-success">DONE</span>
+                </div>
+                <div class="stat-value" id="stat-completed-tasks">0</div>
+                <div class="stat-footnote" id="stat-in-progress-footnote">0 currently in progress</div>
+              </article>
+
+              <article class="card stat-card">
+                <div class="stat-header">
+                  <span class="stat-label">Overdue Tasks</span>
+                  <span class="stat-pill stat-pill-danger">Attention</span>
+                </div>
+                <div class="stat-value" id="stat-overdue-tasks">0</div>
+                <div class="stat-footnote">Past deadline &amp; incomplete</div>
+              </article>
+            </div>
+          </section>
+
+          <!-- Progress Ring & Distribution Charts -->
+          <section class="analytics-grid" aria-label="Task analytics charts">
+            <!-- Completion Progress Indicator -->
+            <article class="card panel-card" aria-labelledby="completion-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="completion-heading">Task Completion</h2>
+                  <p class="panel-subtitle">Overall completion rate across all projects</p>
+                </div>
+              </div>
+
+              <div class="completion-body">
+                <div class="progress-ring-wrapper">
+                  <progress
+                    id="completion-progress"
+                    class="progress-ring"
+                    value="0"
+                    max="100"
+                    aria-label="Task completion percentage"
+                    aria-valuetext="0% completed"
+                  ></progress>
+                  <div class="progress-ring-content" aria-hidden="true">
+                    <span class="progress-ring-percent" id="completion-percent-text">0%</span>
+                    <span class="progress-ring-label">Completed</span>
+                  </div>
+                </div>
+
+                <div class="completion-summary">
+                  <div class="mini-metric">
+                    <div class="mini-metric-label">Completed</div>
+                    <div class="mini-metric-value" id="completion-done-count">0</div>
+                  </div>
+                  <div class="mini-metric">
+                    <div class="mini-metric-label">Remaining</div>
+                    <div class="mini-metric-value" id="completion-pending-count">0</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Status Distribution Chart -->
+            <article class="card panel-card" aria-labelledby="status-chart-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="status-chart-heading">Status Distribution</h2>
+                  <p class="panel-subtitle">Tasks grouped by workflow stage</p>
+                </div>
+              </div>
+
+              <div id="status-chart-empty" class="empty-state" hidden>
+                No tasks recorded yet. Status distribution will appear once tasks are created.
+              </div>
+
+              <div class="chart-bars" id="status-chart-bars">
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-status-todo">TODO</label>
+                    <span class="chart-row-count" id="count-status-todo">0 (0%)</span>
+                  </div>
+                  <progress id="bar-status-todo" class="bar-progress bar-todo" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-status-in-progress">IN_PROGRESS</label>
+                    <span class="chart-row-count" id="count-status-in-progress">0 (0%)</span>
+                  </div>
+                  <progress id="bar-status-in-progress" class="bar-progress bar-in-progress" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-status-in-review">IN_REVIEW</label>
+                    <span class="chart-row-count" id="count-status-in-review">0 (0%)</span>
+                  </div>
+                  <progress id="bar-status-in-review" class="bar-progress bar-in-review" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-status-done">DONE</label>
+                    <span class="chart-row-count" id="count-status-done">0 (0%)</span>
+                  </div>
+                  <progress id="bar-status-done" class="bar-progress bar-done" value="0" max="100"></progress>
+                </div>
+              </div>
+            </article>
+
+            <!-- Priority Distribution Chart -->
+            <article class="card panel-card" aria-labelledby="priority-chart-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="priority-chart-heading">Priority Distribution</h2>
+                  <p class="panel-subtitle">Tasks grouped by urgency level</p>
+                </div>
+              </div>
+
+              <div id="priority-chart-empty" class="empty-state" hidden>
+                No tasks recorded yet. Priority breakdown will appear once tasks are created.
+              </div>
+
+              <div class="chart-bars" id="priority-chart-bars">
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-priority-low">LOW</label>
+                    <span class="chart-row-count" id="count-priority-low">0 (0%)</span>
+                  </div>
+                  <progress id="bar-priority-low" class="bar-progress bar-low" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-priority-medium">MEDIUM</label>
+                    <span class="chart-row-count" id="count-priority-medium">0 (0%)</span>
+                  </div>
+                  <progress id="bar-priority-medium" class="bar-progress bar-medium" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-priority-high">HIGH</label>
+                    <span class="chart-row-count" id="count-priority-high">0 (0%)</span>
+                  </div>
+                  <progress id="bar-priority-high" class="bar-progress bar-high" value="0" max="100"></progress>
+                </div>
+
+                <div class="chart-row">
+                  <div class="chart-row-header">
+                    <label class="chart-row-label" for="bar-priority-urgent">URGENT</label>
+                    <span class="chart-row-count" id="count-priority-urgent">0 (0%)</span>
+                  </div>
+                  <progress id="bar-priority-urgent" class="bar-progress bar-urgent" value="0" max="100"></progress>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <!-- Recent Projects & Upcoming Deadlines -->
+          <section class="workspace-grid" aria-label="Projects and deadlines">
+            <!-- Recent Projects -->
+            <article class="card panel-card" id="projects-section" aria-labelledby="recent-projects-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="recent-projects-heading">Recent Projects</h2>
+                  <p class="panel-subtitle">Most recently created workspaces</p>
+                </div>
+                <span class="badge" id="recent-projects-badge">0 projects</span>
+              </div>
+
+              <div id="recent-projects-empty" class="empty-state" hidden>
+                You have not created any projects yet.
+              </div>
+
+              <ul class="item-list" id="recent-projects-list"></ul>
+            </article>
+
+            <!-- Upcoming Deadlines -->
+            <article class="card panel-card" id="tasks-section" aria-labelledby="deadlines-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="deadlines-heading">Upcoming Deadlines</h2>
+                  <p class="panel-subtitle">Incomplete tasks sorted by earliest due date</p>
+                </div>
+                <span class="badge" id="deadlines-badge">0 scheduled</span>
+              </div>
+
+              <div id="deadlines-empty" class="empty-state" hidden>
+                No incomplete tasks with upcoming or past deadlines.
+              </div>
+
+              <ul class="item-list" id="deadlines-list"></ul>
+            </article>
+          </section>
+
+          <!-- Account Settings Summary -->
+          <section class="card panel-card" id="settings-section" aria-labelledby="settings-heading">
+            <div class="panel-header">
+              <div>
+                <h2 class="panel-title" id="settings-heading">Account Settings</h2>
+                <p class="panel-subtitle">Verified session identity from GET /api/auth/me</p>
+              </div>
+            </div>
+
+            <div class="settings-grid">
+              <div class="settings-item">
+                <span class="settings-label">Full Name</span>
+                <span class="settings-value" id="profile-name">—</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Email Address</span>
+                <span class="settings-value" id="profile-email">—</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">User ID</span>
+                <span class="settings-value" id="profile-id">—</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Member Since</span>
+                <span class="settings-value" id="profile-created-at">—</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>Settings &amp; Profile — TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/settings.js"></script>
+</head>
+<body class="dashboard-body" data-requires-auth="true">
+  <a class="skip-link" href="#main-content">Skip to settings content</a>
+
+  <div class="dashboard-shell">
+    <!-- Mobile & Tablet Header -->
+    <header class="mobile-topbar">
+      <a class="brand" href="dashboard.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+
+      <div class="mobile-topbar-actions">
+        <button
+          type="button"
+          class="nav-toggle"
+          id="sidebar-open-btn"
+          aria-expanded="false"
+          aria-controls="dashboard-sidebar"
+          aria-label="Open navigation menu"
+        >
+          <span aria-hidden="true">&#9776;</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
+    <!-- Fixed Desktop Sidebar / Responsive Drawer -->
+    <aside class="sidebar" id="dashboard-sidebar" aria-label="Workspace sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-header">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">TF</span>
+            <span>TaskFlow</span>
+          </a>
+          <button
+            type="button"
+            class="sidebar-close"
+            id="sidebar-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <nav aria-label="Workspace sections">
+          <ul class="sidebar-nav-list">
+            <li>
+              <a class="sidebar-link" href="dashboard.html">
+                <span class="sidebar-icon" aria-hidden="true">D</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="projects.html">
+                <span class="sidebar-icon" aria-hidden="true">P</span>
+                <span>Projects</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="tasks.html">
+                <span class="sidebar-icon" aria-hidden="true">T</span>
+                <span>Tasks</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link is-active" href="settings.html" aria-current="page">
+                <span class="sidebar-icon" aria-hidden="true">S</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading account…</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-full" id="sidebar-logout-btn">
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="dashboard-main">
+      <div class="dashboard-container">
+        <!-- Loading & Error Guard -->
+        <div id="auth-guard-status" class="alert alert-info" role="status">
+          Verifying your authenticated session and loading profile…
+        </div>
+
+        <div id="settings-error-banner" class="alert alert-error" role="alert" hidden>
+          <div class="alert-actions">
+            <span id="settings-error-text">Unable to load your account profile.</span>
+            <button type="button" class="btn btn-secondary" id="retry-settings-btn">
+              Retry
+            </button>
+          </div>
+        </div>
+
+        <!-- Protected Settings Content -->
+        <div id="settings-content" class="dashboard-container" hidden>
+          <section class="welcome-banner" aria-labelledby="settings-heading">
+            <div>
+              <span class="badge">Account &amp; Workspace</span>
+              <h1 class="welcome-title" id="settings-heading">Settings &amp; Profile</h1>
+              <p class="welcome-subtitle">
+                Review your verified TaskFlow account details, active session, and display preferences.
+              </p>
+            </div>
+            <div class="welcome-actions">
+              <a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
+              <a class="btn btn-ghost" href="projects.html">Projects</a>
+              <a class="btn btn-ghost" href="tasks.html">Tasks</a>
+            </div>
+          </section>
+
+          <div id="settings-feedback" class="alert" role="status" hidden></div>
+
+          <div class="settings-layout">
+            <!-- Profile Card -->
+            <section class="card settings-card" aria-labelledby="profile-card-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="profile-card-heading">Profile Information</h2>
+                  <p class="panel-subtitle">Loaded directly from GET /api/auth/me</p>
+                </div>
+                <span class="badge">Verified</span>
+              </div>
+
+              <div class="settings-grid">
+                <div class="settings-item">
+                  <span class="settings-label">Full Name</span>
+                  <span class="settings-value" id="profile-name">—</span>
+                </div>
+                <div class="settings-item">
+                  <span class="settings-label">Email Address</span>
+                  <span class="settings-value" id="profile-email">—</span>
+                </div>
+                <div class="settings-item">
+                  <span class="settings-label">User ID</span>
+                  <span class="settings-value" id="profile-id">—</span>
+                </div>
+                <div class="settings-item">
+                  <span class="settings-label">Member Since</span>
+                  <span class="settings-value" id="profile-created-at">—</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Account Security Card -->
+            <section class="card settings-card" aria-labelledby="security-card-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="security-card-heading">Account Security</h2>
+                  <p class="panel-subtitle">Password protection &amp; credential hygiene</p>
+                </div>
+              </div>
+
+              <div class="security-status-box">
+                <span class="security-icon" aria-hidden="true">&#10003;</span>
+                <div>
+                  <strong>Protected by password authentication.</strong>
+                  Your account password is hashed on the server with BCrypt and is never stored or returned
+                  in API responses.
+                </div>
+              </div>
+
+              <ul class="security-details-list">
+                <li class="security-detail-row">
+                  <span class="security-detail-label">Authentication Method</span>
+                  <span class="security-detail-meta">Email &amp; BCrypt Password</span>
+                </li>
+                <li class="security-detail-row">
+                  <span class="security-detail-label">API Token Format</span>
+                  <span class="security-detail-meta">Stateless HMAC-SHA256 JWT</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Application Preferences Card -->
+            <section class="card settings-card settings-card-full" aria-labelledby="preferences-card-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="preferences-card-heading">Application Preferences</h2>
+                  <p class="panel-subtitle">
+                    Non-sensitive display preferences stored locally in your browser (never tokens or credentials).
+                  </p>
+                </div>
+              </div>
+
+              <fieldset class="pref-fieldset">
+                <legend class="pref-legend">Color Theme</legend>
+                <p class="pref-help">Choose how TaskFlow renders across all pages.</p>
+                <div class="pref-options-grid pref-cols-3">
+                  <div class="pref-option">
+                    <input type="radio" id="theme-system" name="theme" value="system">
+                    <label class="pref-option-label" for="theme-system">
+                      <span class="pref-option-title">System</span>
+                      <span class="pref-option-desc" id="theme-system-desc">Follow OS preference</span>
+                    </label>
+                  </div>
+
+                  <div class="pref-option">
+                    <input type="radio" id="theme-light" name="theme" value="light">
+                    <label class="pref-option-label" for="theme-light">
+                      <span class="pref-option-title">Light</span>
+                      <span class="pref-option-desc">Crisp white &amp; subtle grey</span>
+                    </label>
+                  </div>
+
+                  <div class="pref-option">
+                    <input type="radio" id="theme-dark" name="theme" value="dark">
+                    <label class="pref-option-label" for="theme-dark">
+                      <span class="pref-option-title">Dark</span>
+                      <span class="pref-option-desc">Deep navy surfaces</span>
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset class="pref-fieldset">
+                <legend class="pref-legend">Layout Density</legend>
+                <p class="pref-help">Adjust spacing inside cards, lists, and task tables.</p>
+                <div class="pref-options-grid pref-cols-2">
+                  <div class="pref-option">
+                    <input type="radio" id="density-comfortable" name="density" value="comfortable">
+                    <label class="pref-option-label" for="density-comfortable">
+                      <span class="pref-option-title">Comfortable</span>
+                      <span class="pref-option-desc">Balanced SaaS spacing (default)</span>
+                    </label>
+                  </div>
+
+                  <div class="pref-option">
+                    <input type="radio" id="density-compact" name="density" value="compact">
+                    <label class="pref-option-label" for="density-compact">
+                      <span class="pref-option-title">Compact</span>
+                      <span class="pref-option-desc">Higher information density</span>
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <div class="pref-actions-row">
+                <span class="security-detail-meta" id="preferences-status-label">
+                  Changes apply immediately across TaskFlow pages.
+                </span>
+                <button type="button" class="btn btn-secondary" id="reset-preferences-btn">
+                  Reset to defaults
+                </button>
+              </div>
+            </section>
+
+            <!-- Active Session & Logout Card -->
+            <section class="card settings-card settings-card-full" aria-labelledby="session-card-heading">
+              <div class="panel-header">
+                <div>
+                  <h2 class="panel-title" id="session-card-heading">Active Session</h2>
+                  <p class="panel-subtitle">
+                    Your JWT access token is stored in browser sessionStorage and revoked on the server when you sign out.
+                  </p>
+                </div>
+              </div>
+
+              <div class="session-card-actions">
+                <div class="security-detail-meta">
+                  Signing out calls <code>POST /api/auth/logout</code> and clears your browser session immediately.
+                </div>
+                <button type="button" class="btn btn-danger" id="settings-logout-btn">
+                  Sign out
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

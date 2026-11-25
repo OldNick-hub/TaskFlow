@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>TaskFlow — Project &amp; Task Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+
+      <button
+        type="button"
+        class="nav-toggle"
+        id="nav-toggle"
+        aria-expanded="false"
+        aria-controls="primary-nav"
+        aria-label="Toggle navigation menu"
+      >
+        <span aria-hidden="true">&#9776;</span>
+      </button>
+
+      <nav class="nav-menu" id="primary-nav" aria-label="Primary navigation">
+        <ul class="nav-links">
+          <li><a class="nav-link" href="#capabilities">Capabilities</a></li>
+          <li><a class="nav-link" href="#architecture">Platform</a></li>
+        </ul>
+
+        <div class="nav-actions" id="nav-guest-actions">
+          <a class="btn btn-ghost" href="login.html">Sign in</a>
+          <a class="btn btn-primary" href="register.html">Get started</a>
+        </div>
+
+        <div class="nav-actions" id="nav-auth-actions" hidden>
+          <span class="session-pill" id="session-user-label">Signed in</span>
+          <button type="button" class="btn btn-secondary" id="logout-btn">Sign out</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="badge">Cloud Task Management</span>
+          <h1 class="hero-title">Organize projects, track deliverables, and ship on schedule.</h1>
+          <p class="hero-subtitle">
+            TaskFlow brings project workspaces, priority-driven task workflows, and real-time completion
+            analytics together behind secure JWT authentication and MongoDB persistence.
+          </p>
+
+          <div class="hero-actions" id="hero-guest-cta">
+            <a class="btn btn-primary" href="register.html">Create free account</a>
+            <a class="btn btn-secondary" href="login.html">Sign in to workspace</a>
+          </div>
+
+          <div class="hero-actions" id="hero-auth-cta" hidden>
+            <a class="btn btn-primary" href="dashboard.html">Open workspace</a>
+            <div class="alert alert-success" role="status" style="margin-block-end: 0; width: 100%;">
+              <div>
+                <strong>Authenticated session active.</strong>
+                <span id="welcome-user-text">Welcome back to TaskFlow.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-panel" id="architecture" aria-label="Backend platform status">
+          <h2 class="panel-heading">Platform Readiness</h2>
+          <p class="panel-caption">Connected to the TaskFlow Spring Boot REST API.</p>
+          <ul class="status-list">
+            <li class="status-item">
+              <div>
+                <div class="status-label">Authentication</div>
+                <div class="status-meta">Stateless JWT &amp; token revocation</div>
+              </div>
+              <span class="badge" id="auth-status-badge">Checking…</span>
+            </li>
+            <li class="status-item">
+              <div>
+                <div class="status-label">Projects &amp; Tasks API</div>
+                <div class="status-meta">Owner-scoped MongoDB collections</div>
+              </div>
+              <span class="badge">Ready</span>
+            </li>
+            <li class="status-item">
+              <div>
+                <div class="status-label">Database Health</div>
+                <div class="status-meta">GET /api/health/db</div>
+              </div>
+              <span class="badge" id="db-status-badge">Checking…</span>
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="capabilities">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Built for focused execution</h2>
+          <p class="section-subtitle">
+            Every workspace is isolated to its authenticated owner across projects, tasks, and analytics.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="card feature-card">
+            <div class="feature-icon" aria-hidden="true">01</div>
+            <h3>Project Workspaces</h3>
+            <p>Structure initiatives into dedicated projects with strict owner-level access control.</p>
+          </article>
+
+          <article class="card feature-card">
+            <div class="feature-icon" aria-hidden="true">02</div>
+            <h3>Workflow &amp; Priorities</h3>
+            <p>Track tasks from TODO through IN_PROGRESS and IN_REVIEW to DONE with URGENT–LOW priorities.</p>
+          </article>
+
+          <article class="card feature-card">
+            <div class="feature-icon" aria-hidden="true">03</div>
+            <h3>Live Analytics</h3>
+            <p>Monitor completion percentages, overdue items, and status/priority distributions in real time.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>TaskFlow &copy; 2026</span>
+      <span>Powered by Spring Boot &amp; MongoDB</span>
+    </div>
+  </footer>
+</body>
+</html>

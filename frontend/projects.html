@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>Projects — TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/projects.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/projects.js"></script>
+</head>
+<body class="dashboard-body" data-requires-auth="true">
+  <a class="skip-link" href="#main-content">Skip to projects content</a>
+
+  <div class="dashboard-shell">
+    <!-- Mobile & Tablet Header -->
+    <header class="mobile-topbar">
+      <a class="brand" href="dashboard.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+
+      <div class="mobile-topbar-actions">
+        <button
+          type="button"
+          class="nav-toggle"
+          id="sidebar-open-btn"
+          aria-expanded="false"
+          aria-controls="dashboard-sidebar"
+          aria-label="Open navigation menu"
+        >
+          <span aria-hidden="true">&#9776;</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
+    <!-- Fixed Desktop Sidebar / Responsive Drawer -->
+    <aside class="sidebar" id="dashboard-sidebar" aria-label="Workspace sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-header">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">TF</span>
+            <span>TaskFlow</span>
+          </a>
+          <button
+            type="button"
+            class="sidebar-close"
+            id="sidebar-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <nav aria-label="Workspace sections">
+          <ul class="sidebar-nav-list">
+            <li>
+              <a class="sidebar-link" href="dashboard.html">
+                <span class="sidebar-icon" aria-hidden="true">D</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link is-active" href="projects.html" aria-current="page">
+                <span class="sidebar-icon" aria-hidden="true">P</span>
+                <span>Projects</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="tasks.html">
+                <span class="sidebar-icon" aria-hidden="true">T</span>
+                <span>Tasks</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="settings.html">
+                <span class="sidebar-icon" aria-hidden="true">S</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading account…</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-full" id="logout-btn">
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="dashboard-main">
+      <div class="dashboard-container">
+        <div id="auth-guard-status" class="alert alert-info" role="status">
+          Verifying your authenticated session…
+        </div>
+
+        <div id="projects-content" class="dashboard-container" hidden>
+          <!-- Page Header -->
+          <section class="welcome-banner" aria-labelledby="projects-heading">
+            <div>
+              <span class="badge">Workspace Management</span>
+              <h1 class="welcome-title" id="projects-heading">Projects</h1>
+              <p class="welcome-subtitle">
+                Create, inspect, edit, and organize your TaskFlow projects.
+              </p>
+            </div>
+            <div class="welcome-actions">
+              <a class="btn btn-ghost" href="dashboard.html">Back to Dashboard</a>
+              <button type="button" class="btn btn-secondary" id="refresh-projects-btn">
+                Refresh
+              </button>
+              <button type="button" class="btn btn-primary" id="create-project-btn">
+                Create Project
+              </button>
+            </div>
+          </section>
+
+          <!-- Status / Feedback Banners -->
+          <div id="projects-feedback" class="alert" role="status" hidden></div>
+
+          <div id="projects-loading-banner" class="alert alert-info" role="status" hidden>
+            Loading your projects and task counts…
+          </div>
+
+          <div id="projects-error-banner" class="alert alert-error" role="alert" hidden>
+            <div class="alert-actions">
+              <span id="projects-error-text">Unable to load projects.</span>
+              <button type="button" class="btn btn-secondary" id="retry-projects-btn">
+                Retry
+              </button>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="projects-toolbar">
+            <span class="projects-count-label" id="projects-count-label">0 projects</span>
+          </div>
+
+          <!-- Empty State -->
+          <section id="projects-empty-state" class="card empty-card" hidden>
+            <h2>No projects yet</h2>
+            <p>
+              Create your first project to start organizing tasks, priorities, and upcoming deadlines.
+            </p>
+            <button type="button" class="btn btn-primary" id="empty-create-project-btn">
+              Create Project
+            </button>
+          </section>
+
+          <!-- Responsive Project Cards Grid -->
+          <section aria-label="Project list">
+            <div class="projects-grid" id="projects-grid"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create / Edit Project Modal -->
+  <dialog id="project-form-dialog" class="tf-modal" aria-labelledby="project-form-title">
+    <div class="modal-header">
+      <h1 class="modal-title" id="project-form-title">Create Project</h1>
+      <button
+        type="button"
+        class="modal-close"
+        id="project-form-close-btn"
+        aria-label="Close project form"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <form id="project-form" method="POST" novalidate>
+      <div class="modal-body">
+        <div id="project-form-error" class="alert alert-error" role="alert" hidden></div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="project-name-input">
+            Project name <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <span id="project-name-hint" class="hint">Required, 1 to 150 characters.</span>
+          <input
+            type="text"
+            id="project-name-input"
+            name="name"
+            class="input"
+            required
+            maxlength="150"
+            autofocus
+            aria-describedby="project-name-hint"
+            data-error="project-name-error"
+            placeholder="e.g. Q4 Platform Launch"
+          >
+          <div id="project-name-error" class="error-msg">
+            Project name is required and must not exceed 150 characters.
+          </div>
+        </div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="project-description-input">Description</label>
+          <span id="project-description-hint" class="hint">Optional, up to 1000 characters.</span>
+          <textarea
+            id="project-description-input"
+            name="description"
+            class="input textarea"
+            maxlength="1000"
+            aria-describedby="project-description-hint"
+            data-error="project-description-error"
+            placeholder="Describe project goals, scope, or key milestones"
+          ></textarea>
+          <div id="project-description-error" class="error-msg">
+            Description must not exceed 1000 characters.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="project-form-cancel-btn">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="project-form-submit-btn">
+          Create Project
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- View Project Details Modal -->
+  <dialog id="project-detail-dialog" class="tf-modal tf-modal-lg" closedby="any" aria-labelledby="detail-project-title">
+    <div class="modal-header">
+      <div>
+        <span class="badge">Project Details</span>
+        <h1 class="modal-title" id="detail-project-title" style="margin-block-start: 0.5rem;">Project</h1>
+      </div>
+      <button
+        type="button"
+        class="modal-close"
+        id="detail-close-btn"
+        autofocus
+        aria-label="Close project details"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="detail-description" id="detail-project-description">No description provided.</p>
+
+      <div class="detail-meta-grid">
+        <div class="mini-metric">
+          <div class="mini-metric-label">Created</div>
+          <div class="mini-metric-value" id="detail-project-created">—</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-label">Last Updated</div>
+          <div class="mini-metric-value" id="detail-project-updated">—</div>
+        </div>
+        <div class="mini-metric">
+          <div class="mini-metric-label">Project Tasks</div>
+          <div class="mini-metric-value" id="detail-project-task-count">0</div>
+        </div>
+      </div>
+
+      <div class="detail-section-header">
+        <h2 class="detail-section-title">Tasks in this Project</h2>
+        <span class="badge" id="detail-tasks-badge">0 tasks</span>
+      </div>
+
+      <div id="detail-tasks-loading" class="alert alert-info" role="status" hidden>
+        Loading project tasks…
+      </div>
+
+      <div id="detail-tasks-error" class="alert alert-error" role="alert" hidden>
+        <span id="detail-tasks-error-text">Unable to load tasks for this project.</span>
+      </div>
+
+      <div id="detail-tasks-empty" class="empty-state" hidden>
+        No tasks have been added to this project yet.
+      </div>
+
+      <ul class="item-list" id="detail-tasks-list"></ul>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger-outline" id="detail-delete-btn">
+        Delete Project
+      </button>
+      <button type="button" class="btn btn-secondary" id="detail-edit-btn">
+        Edit Project
+      </button>
+      <button type="button" class="btn btn-primary" id="detail-done-btn">
+        Close
+      </button>
+    </div>
+  </dialog>
+
+  <!-- Delete Project Confirmation Modal -->
+  <dialog id="delete-project-dialog" class="tf-modal" closedby="any" aria-labelledby="delete-dialog-title">
+    <div class="modal-header">
+      <h1 class="modal-title" id="delete-dialog-title">Delete Project?</h1>
+      <button
+        type="button"
+        class="modal-close"
+        id="delete-close-btn"
+        aria-label="Close delete confirmation"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="delete-dialog-error" class="alert alert-error" role="alert" hidden></div>
+      <p class="detail-description" id="delete-dialog-message">
+        Are you sure you want to delete this project? This action cannot be undone.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="delete-cancel-btn" autofocus>
+        Cancel
+      </button>
+      <button type="button" class="btn btn-danger" id="delete-confirm-btn">
+        Delete Project
+      </button>
+    </div>
+  </dialog>
+</body>
+</html>

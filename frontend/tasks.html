@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="taskflow-api-base" content="REPLACE_WITH_RENDER_BACKEND_URL">
+  <script src="js/preferences.js"></script>
+  <title>Tasks — TaskFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/projects.css">
+  <link rel="stylesheet" href="css/tasks.css">
+  <script defer src="js/api.js"></script>
+  <script defer src="js/tasks.js"></script>
+</head>
+<body class="dashboard-body" data-requires-auth="true">
+  <a class="skip-link" href="#main-content">Skip to tasks workspace</a>
+
+  <div class="dashboard-shell">
+    <!-- Mobile & Tablet Header -->
+    <header class="mobile-topbar">
+      <a class="brand" href="dashboard.html">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <span>TaskFlow</span>
+      </a>
+
+      <div class="mobile-topbar-actions">
+        <button
+          type="button"
+          class="nav-toggle"
+          id="sidebar-open-btn"
+          aria-expanded="false"
+          aria-controls="dashboard-sidebar"
+          aria-label="Open navigation menu"
+        >
+          <span aria-hidden="true">&#9776;</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+
+    <!-- Fixed Desktop Sidebar / Responsive Drawer -->
+    <aside class="sidebar" id="dashboard-sidebar" aria-label="Workspace sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-header">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">TF</span>
+            <span>TaskFlow</span>
+          </a>
+          <button
+            type="button"
+            class="sidebar-close"
+            id="sidebar-close-btn"
+            aria-label="Close navigation menu"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <nav aria-label="Workspace sections">
+          <ul class="sidebar-nav-list">
+            <li>
+              <a class="sidebar-link" href="dashboard.html">
+                <span class="sidebar-icon" aria-hidden="true">D</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="projects.html">
+                <span class="sidebar-icon" aria-hidden="true">P</span>
+                <span>Projects</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link is-active" href="tasks.html" aria-current="page">
+                <span class="sidebar-icon" aria-hidden="true">T</span>
+                <span>Tasks</span>
+              </a>
+            </li>
+            <li>
+              <a class="sidebar-link" href="settings.html">
+                <span class="sidebar-icon" aria-hidden="true">S</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-user-name" id="sidebar-user-name">Loading account…</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-full" id="logout-btn">
+          Sign out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="dashboard-main">
+      <div class="dashboard-container">
+        <div id="auth-guard-status" class="alert alert-info" role="status">
+          Verifying your authenticated session…
+        </div>
+
+        <div id="tasks-content" class="dashboard-container" hidden>
+          <!-- Page Header -->
+          <section class="welcome-banner" aria-labelledby="tasks-heading">
+            <div>
+              <span class="badge">Execution Board</span>
+              <h1 class="welcome-title" id="tasks-heading">Tasks</h1>
+              <p class="welcome-subtitle">
+                Organize, filter, prioritize, and update tasks across your TaskFlow projects.
+              </p>
+            </div>
+            <div class="welcome-actions">
+              <a class="btn btn-ghost" href="dashboard.html">Dashboard</a>
+              <a class="btn btn-ghost" href="projects.html">Projects</a>
+              <button type="button" class="btn btn-secondary" id="refresh-tasks-btn">
+                Refresh
+              </button>
+              <button type="button" class="btn btn-primary" id="create-task-btn">
+                Create Task
+              </button>
+            </div>
+          </section>
+
+          <!-- Filters & View Switcher -->
+          <section class="card tasks-controls-card" aria-label="Task filters and view controls">
+            <div class="filters-row">
+              <div class="filter-group">
+                <label class="filter-label" for="filter-project">Project</label>
+                <select id="filter-project" class="select-input">
+                  <option value="ALL">All Projects</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label" for="filter-status">Status</label>
+                <select id="filter-status" class="select-input">
+                  <option value="">All Statuses</option>
+                  <option value="TODO">TODO</option>
+                  <option value="IN_PROGRESS">IN_PROGRESS</option>
+                  <option value="IN_REVIEW">IN_REVIEW</option>
+                  <option value="DONE">DONE</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label" for="filter-priority">Priority</label>
+                <select id="filter-priority" class="select-input">
+                  <option value="">All Priorities</option>
+                  <option value="LOW">LOW</option>
+                  <option value="MEDIUM">MEDIUM</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="URGENT">URGENT</option>
+                </select>
+              </div>
+
+              <div>
+                <button type="button" class="btn btn-secondary" id="clear-filters-btn">
+                  Clear filters
+                </button>
+              </div>
+
+              <div class="view-toggle-group" role="group" aria-label="Task view mode">
+                <button type="button" class="view-toggle-btn" id="view-kanban-btn" aria-pressed="true">
+                  Kanban
+                </button>
+                <button type="button" class="view-toggle-btn" id="view-list-btn" aria-pressed="false">
+                  List
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Feedback / Loading / Error Banners -->
+          <div id="tasks-feedback" class="alert" role="status" hidden></div>
+
+          <div id="tasks-loading-banner" class="alert alert-info" role="status" hidden>
+            Loading projects and tasks…
+          </div>
+
+          <div id="tasks-error-banner" class="alert alert-error" role="alert" hidden>
+            <div class="alert-actions">
+              <span id="tasks-error-text">Unable to load tasks.</span>
+              <button type="button" class="btn btn-secondary" id="retry-tasks-btn">
+                Retry
+              </button>
+            </div>
+          </div>
+
+          <!-- Toolbar Summary -->
+          <div class="projects-toolbar">
+            <span class="projects-count-label" id="tasks-count-label">0 tasks</span>
+            <span class="visually-hidden" id="sort-status-announcer" role="status"></span>
+          </div>
+
+          <!-- No Projects State -->
+          <section id="tasks-no-projects-state" class="card empty-card" hidden>
+            <h2>Create a project first</h2>
+            <p>
+              Tasks belong to projects. Create your first project before adding and tracking tasks.
+            </p>
+            <a class="btn btn-primary" href="projects.html">Go to Projects</a>
+          </section>
+
+          <!-- Empty Tasks State -->
+          <section id="tasks-empty-state" class="card empty-card" hidden>
+            <h2 id="tasks-empty-title">No tasks found</h2>
+            <p id="tasks-empty-message">
+              Create a task in your selected project or adjust active filters.
+            </p>
+            <button type="button" class="btn btn-primary" id="empty-create-task-btn">
+              Create Task
+            </button>
+          </section>
+
+          <!-- Kanban Board View -->
+          <section id="kanban-view" class="kanban-scroll" aria-label="Kanban task board">
+            <div class="kanban-board">
+              <section class="kanban-column" data-status-column="TODO" aria-labelledby="col-title-todo">
+                <header class="kanban-column-header">
+                  <h2 class="kanban-column-title" id="col-title-todo">TODO</h2>
+                  <span class="kanban-column-count" id="col-count-TODO">0</span>
+                </header>
+                <div class="kanban-cards" id="col-cards-TODO"></div>
+              </section>
+
+              <section class="kanban-column" data-status-column="IN_PROGRESS" aria-labelledby="col-title-in-progress">
+                <header class="kanban-column-header">
+                  <h2 class="kanban-column-title" id="col-title-in-progress">IN_PROGRESS</h2>
+                  <span class="kanban-column-count" id="col-count-IN_PROGRESS">0</span>
+                </header>
+                <div class="kanban-cards" id="col-cards-IN_PROGRESS"></div>
+              </section>
+
+              <section class="kanban-column" data-status-column="IN_REVIEW" aria-labelledby="col-title-in-review">
+                <header class="kanban-column-header">
+                  <h2 class="kanban-column-title" id="col-title-in-review">IN_REVIEW</h2>
+                  <span class="kanban-column-count" id="col-count-IN_REVIEW">0</span>
+                </header>
+                <div class="kanban-cards" id="col-cards-IN_REVIEW"></div>
+              </section>
+
+              <section class="kanban-column" data-status-column="DONE" aria-labelledby="col-title-done">
+                <header class="kanban-column-header">
+                  <h2 class="kanban-column-title" id="col-title-done">DONE</h2>
+                  <span class="kanban-column-count" id="col-count-DONE">0</span>
+                </header>
+                <div class="kanban-cards" id="col-cards-DONE"></div>
+              </section>
+            </div>
+          </section>
+
+          <!-- Sortable List View -->
+          <section id="list-view" hidden>
+            <div tabindex="0" role="region" aria-labelledby="tasks-table-caption" class="table-wrapper">
+              <table class="tasks-table" id="tasks-table">
+                <caption id="tasks-table-caption">
+                  Tasks table — sort by Status, Priority, or Due Date
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Task</th>
+                    <th scope="col">Project</th>
+                    <th scope="col" data-type="number" data-sort-key="status">
+                      <button type="button" class="sort-header-btn" commandfor="tasks-table" command="--sort">
+                        <span>Status</span>
+                        <span class="sort-indicator" aria-hidden="true"></span>
+                      </button>
+                    </th>
+                    <th scope="col" data-type="number" data-sort-key="priority">
+                      <button type="button" class="sort-header-btn" commandfor="tasks-table" command="--sort">
+                        <span>Priority</span>
+                        <span class="sort-indicator" aria-hidden="true"></span>
+                      </button>
+                    </th>
+                    <th scope="col" data-type="number" data-sort-key="dueDate">
+                      <button type="button" class="sort-header-btn" commandfor="tasks-table" command="--sort">
+                        <span>Due Date</span>
+                        <span class="sort-indicator" aria-hidden="true"></span>
+                      </button>
+                    </th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create / Edit Task Modal -->
+  <dialog id="task-form-dialog" class="tf-modal" aria-labelledby="task-form-title">
+    <div class="modal-header">
+      <h1 class="modal-title" id="task-form-title">Create Task</h1>
+      <button
+        type="button"
+        class="modal-close"
+        id="task-form-close-btn"
+        aria-label="Close task form"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <form id="task-form" method="POST" novalidate>
+      <div class="modal-body">
+        <div id="task-form-error" class="alert alert-error" role="alert" hidden></div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="task-project-input">
+            Project <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <select
+            id="task-project-input"
+            name="projectId"
+            class="select-input"
+            required
+            data-error="task-project-error"
+          ></select>
+          <div id="task-project-error" class="error-msg">
+            Please select a project for this task.
+          </div>
+        </div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="task-title-input">
+            Task title <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <span id="task-title-hint" class="hint">Required, 1 to 200 characters.</span>
+          <input
+            type="text"
+            id="task-title-input"
+            name="title"
+            class="input"
+            required
+            maxlength="200"
+            autofocus
+            aria-describedby="task-title-hint"
+            data-error="task-title-error"
+            placeholder="e.g. Finalize API integration tests"
+          >
+          <div id="task-title-error" class="error-msg">
+            Task title is required and must not exceed 200 characters.
+          </div>
+        </div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="task-description-input">Description</label>
+          <span id="task-description-hint" class="hint">Optional, up to 2000 characters.</span>
+          <textarea
+            id="task-description-input"
+            name="description"
+            class="input textarea"
+            maxlength="2000"
+            aria-describedby="task-description-hint"
+            data-error="task-description-error"
+            placeholder="Add acceptance criteria or implementation notes"
+          ></textarea>
+          <div id="task-description-error" class="error-msg">
+            Description must not exceed 2000 characters.
+          </div>
+        </div>
+
+        <div class="modal-form-row">
+          <div class="field" style="margin-block-end: 0;">
+            <label for="task-status-input">Status</label>
+            <select id="task-status-input" name="status" class="select-input">
+              <option value="TODO">TODO</option>
+              <option value="IN_PROGRESS">IN_PROGRESS</option>
+              <option value="IN_REVIEW">IN_REVIEW</option>
+              <option value="DONE">DONE</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin-block-end: 0;">
+            <label for="task-priority-input">Priority</label>
+            <select id="task-priority-input" name="priority" class="select-input">
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM" selected>MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+              <option value="URGENT">URGENT</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" style="margin-block-end: 0;">
+          <label for="task-due-input">Due date &amp; time</label>
+          <span id="task-due-hint" class="hint">Optional deadline in your local timezone.</span>
+          <input
+            type="datetime-local"
+            id="task-due-input"
+            name="dueDate"
+            class="input"
+            aria-describedby="task-due-hint"
+          >
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="task-form-cancel-btn">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="task-form-submit-btn">
+          Create Task
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Delete Task Confirmation Modal -->
+  <dialog id="delete-task-dialog" class="tf-modal" closedby="any" aria-labelledby="delete-task-title">
+    <div class="modal-header">
+      <h1 class="modal-title" id="delete-task-title">Delete Task?</h1>
+      <button
+        type="button"
+        class="modal-close"
+        id="delete-task-close-btn"
+        aria-label="Close delete confirmation"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="delete-task-error" class="alert alert-error" role="alert" hidden></div>
+      <p class="detail-description" id="delete-task-message">
+        Are you sure you want to delete this task? This action cannot be undone.
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="delete-task-cancel-btn" autofocus>
+        Cancel
+      </button>
+      <button type="button" class="btn btn-danger" id="delete-task-confirm-btn">
+        Delete Task
+      </button>
+    </div>
+  </dialog>
+</body>
+</html>
